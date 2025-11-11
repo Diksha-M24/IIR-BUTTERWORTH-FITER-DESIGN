@@ -8,7 +8,7 @@
 PC installed with SCILAB. 
 
 ## PROGRAM (Linear Convolution): 
-
+```
 // Linear Convolution
 
 
@@ -105,7 +105,7 @@ xtitle("Circular Convolution y[n]");
 
 ## OUTPUT (Circular Convolution): 
 <img width="888" height="709" alt="image" src="https://github.com/user-attachments/assets/2f64439b-d024-4be8-82fa-2c31237d81a1" />
-
+```
 ## RESULT: 
 Thus, the linear convolution and circular convolution of the two given sequences were performed and its result was verified.
 
