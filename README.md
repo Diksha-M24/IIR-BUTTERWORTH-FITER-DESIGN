@@ -1,4 +1,4 @@
-# EXP 1 : Linear and Circular Convolution
+# EXP 3 : IIR-BUTTERWORTH-FITER-DESIGN
 
 ## AIM: 
 
