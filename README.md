@@ -45,8 +45,6 @@ ylabel('Magnitude');
 title('Frequency Response of Butterworth IIR LPF');
 ```
 
-
-
 ## PROGRAM (HPF): 
 
 ```
