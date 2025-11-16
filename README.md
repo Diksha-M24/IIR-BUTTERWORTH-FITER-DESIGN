@@ -2,111 +2,115 @@
 
 ## AIM: 
 
- To perform Linear and Circular Convolution for two given sequence using SCILAB. 
+ To design an IIR Butterworth filter  using SCILAB. 
 
 ## APPARATUS REQUIRED: 
 PC installed with SCILAB. 
 
-## PROGRAM (Linear Convolution): 
+## PROGRAM (LPF): 
 ```
-// Linear Convolution
+clc; close;
+
+wp = input('Enter the pass band frequency (Radians )= ');
+ws = input('Enter the stop band frequency (Radians )= ');
+alphap = input('Enter the pass band attenuation (dB)= ');
+alphas = input('Enter the stop band attenuation(dB)= ');
+T = input('Enter the Value of sampling Time= ');
+omegap = (2/T)*tan(wp/2);
+omegas = (2/T)*tan(ws/2);
+
+Ncalc = log10(((10^(0.1*alphas))-1)/((10^(0.1*alphap))-1)) / (2*log10(omegas/omegap));
+N = ceil(Ncalc);
+
+omegac = omegap / (((10^(0.1*alphap)) - 1)^(1/(2*N)));
 
 
-x = input("Enter x(n) as a vector, e.g., [1 2 1 2]: ");
-h = input("Enter h(n) as a vector, e.g., [1 1]: ");
+disp("Computed (non-integer) N = " + string(Ncalc));
+disp("Rounded N = " + string(N));
+disp("Analog cutoff omegac = " + string(omegac));
 
-Nx = length(x);
-Nh = length(h);
-Ny = Nx + Nh - 1;
+hs = analpf(N, 'butt', [0,0], omegac); 
+disp(hs);
 
-x_p = [x, zeros(1, Ny - Nx)];
-h_p = [h, zeros(1, Ny - Nh)];
+z = poly(0, 'z'); 
+Hz = horner(hs, (2/T)*((z-1)/(z+1)));
+disp("Digital H(z) = ");
+disp(Hz);
 
-y = zeros(1, Ny);
-for n = 0:Ny-1
-    for k = 0:Nx-1
-        if (n-k >= 0 & n-k < Nh) then
-            y(n+1) = y(n+1) + x_p(k+1) * h_p(n-k+1);
-        end
-    end
-end
-
-disp("y(n) = "), disp(y);
-
-clf;
-
-subplot(3,1,1);
-n1 = 0:Nx-1;
-plot2d3(n1, x);   
-xtitle("x(n)");
-
-subplot(3,1,2);
-n2 = 0:Nh-1;
-plot2d3(n2, h);
-xtitle("h(n)");
-
-subplot(3,1,3);
-n3 = 0:Ny-1;
-plot2d3(n3, y);
-xtitle("y(n) = x(n) * h(n)");
-
-## PROGRAM (Circular Convolution): 
-
-// Circular Convolution
+HW = frmag(Hz, 1024); 
+w = 0:%pi/1023:%pi;
+plot(w/%pi, abs(HW));
+xlabel('Normalized Digital Frequency w');
+ylabel('Magnitude');
+title('Frequency Response of Butterworth IIR LPF');
+```
 
 
+
+## PROGRAM (HPF): 
+
+```
 clc;
 clear;
+close;
 
+wp = input('Enter the pass band frequency (Radians )= ');
+ws = input('Enter the stop band frequency (Radians )= ');
+alphap = input('Enter the pass band attenuation (dB)= ');
+alphas = input('Enter the stop band attenuation (dB)= ');
+T = input('Enter the Value of sampling Time=');
 
-function [y] = pmod(a, n)
-    y = modulo(a, n);
-endfunction
+omegap = (2/T)*tan(wp/2);
+disp(omegap, 'omegap=');
+omegas = (2/T)*tan(ws/2);
+disp(omegas, 'omegas=');
 
+N = log10(((10^(0.1*alphas))-1)/((10^(0.1*alphap))-1))/(2*log10(omegap/omegas));
+disp(N, 'N=');
+N = ceil(N);
+disp(N, 'Round off value of N=');
 
-disp("Enter first sequence x: ");
-x = input("");
+omegac = omegas/(((10^(0.1*alphas)) -1)^(1/(2* N)));
+disp(omegac, 'omegac=');
 
-disp("Enter second sequence h: ");
-h = input("");
+disp('Normalized Analog LPF Transfer function H(s)=');
+hs_Normalised = analpf(N,'butt',[0,0],1);
+disp(hs_Normalised);
 
-N = max(length(x), length(h));
+disp('Analog LPF Transfer function H(s)=');
+hs = analpf(N,'butt',[0,0],omegac);
+disp(hs);
 
+s = poly(0,'s');
+hs_hp = horner(hs, (omegac^2)/s);  
 
-x = [x, zeros(1, N-length(x))];
-h = [h, zeros(1, N-length(h))];
+disp('Analog HPF Transfer function H(s)=');
+disp(hs_hp);
 
-y_lin = conv(x, h);
+z = poly(0,'z');
+Hz = horner(hs_hp, (2/T)*((z - 1)/(z + 1)));
 
-y_circ = zeros(1, N);
-for k = 1:length(y_lin)
-    idx = pmod(k-1, N) + 1;
-    y_circ(idx) = y_circ(idx) + y_lin(k);
-end
+disp('Digital HPF Transfer function H(z)=');
+disp(Hz);
+HW = frmag(Hz,512);
+w = 0:%pi/511:%pi;
 
-disp("Circular Convolution using conv():");
-disp(y_circ);
-
-subplot(3,1,1);
-plot2d3(0:N-1, x);
-xtitle("Input Sequence x[n]");
-
-subplot(3,1,2);
-plot2d3(0:N-1, h);
-xtitle("Input Sequence h[n]");
-
-subplot(3,1,3);
-plot2d3(0:N-1, y_circ);
-xtitle("Circular Convolution y[n]");
-
-## OUTPUT (Linear Convolution): 
-<img width="914" height="714" alt="image" src="https://github.com/user-attachments/assets/917549db-5e2d-4c18-913c-2112b23f26c0" />
-
-
-## OUTPUT (Circular Convolution): 
-<img width="888" height="709" alt="image" src="https://github.com/user-attachments/assets/2f64439b-d024-4be8-82fa-2c31237d81a1" />
+plot(w/%pi, abs(HW));
+xlabel('Normalized Digital Frequency (×π rad/sample)');
+ylabel('Magnitude');
+title('Frequency Response of Butterworth IIR High-pass Filter');
+xgrid();
 ```
+
+## OUTPUT (LPF) :
+<img width="760" height="726" alt="image" src="https://github.com/user-attachments/assets/64df81c6-ddcc-4ad9-8d53-b111c1e8a362" />
+
+
+## OUTPUT (HPF) : 
+<img width="757" height="719" alt="image" src="https://github.com/user-attachments/assets/db703140-f39e-4e0d-804f-252e25c2c7e3" />
+
+
 ## RESULT: 
-Thus, the linear convolution and circular convolution of the two given sequences were performed and its result was verified.
+   Thus, design of Butterworth Low pass and High pass IIR filter waveforms were plotted and output was verified.
 
 
